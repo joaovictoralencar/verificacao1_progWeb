@@ -2,6 +2,7 @@ package verificacao;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Scanner;
 
 /**
  *
@@ -11,7 +12,6 @@ public class Main {
 
     static class admUsuarios {
 
-        static int numUsuarios;
         static ArrayList<Usuario>usuarios = new ArrayList<>();
     }
 
@@ -22,7 +22,7 @@ public class Main {
     
     public static void main(String[] args) throws IOException {
         // TODO code application logic here
-        Menu m = new Menu();
+        Menu m = new Menu(new Scanner(System.in));
         m.mostraInterface();
     }
 

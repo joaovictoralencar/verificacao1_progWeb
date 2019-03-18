@@ -22,8 +22,9 @@ import java.util.ArrayList;
 public class Menu {
 
     int opcaoMarcada = 100000;
-
-    Menu() throws FileNotFoundException, IOException {
+    Scanner input;
+    Menu(Scanner input) throws FileNotFoundException, IOException {
+        
         File arquivo = new File("Usuários.txt");
         boolean existe = arquivo.exists();
         if (!existe) {
@@ -38,7 +39,7 @@ public class Menu {
         BufferedReader br = new BufferedReader(fr);
         Usuario usuarioTempo;
         if (arquivo.length() != 0) {
-            for (int i = 0; i < 1; i++) {
+            for (int i = 0; i < Main.admUsuarios.usuarios.size(); i++) {
                 usuarioTempo = new Usuario();
                 usuarioTempo.setLogin(br.readLine().split(": ")[1]);
                 usuarioTempo.setNome(br.readLine().split(": ")[1]);
@@ -50,8 +51,8 @@ public class Menu {
 
     void mostraInterface() throws IOException {
         Scanner input = new Scanner(System.in);
-
         do {
+            System.out.println("");
             System.out.println("Opção Descrição\n"
                     + "1 Incluir um novo usuário\n"
                     + "2 Alterar um usuário existente\n"
@@ -60,17 +61,21 @@ public class Menu {
                     + "5 Exibir todos os usuários existentes\n"
                     + "0 Sair\n"
                     + "Digite o número da opção:");
-            opcaoMarcada = input.nextInt();
+            
+            //System.out.println(input);
+            opcaoMarcada = Integer.parseInt(input.nextLine());
+            //mexe aqui
+            System.out.println("OPÇÃO MARCADA = "+opcaoMarcada);
             switch (opcaoMarcada) {
                 case 1:
-                    incluirUsuario();
+                    incluirUsuario(input);
                     break;
                 case 2:
-                    alterarUsuario();
+                    alterarUsuario(input);
                     break;
                 case 3:
                     System.out.println("Digite o login do usuário que você deseja remover");
-                    removerUsuario(input.nextLine());
+                    removerUsuario(input.nextLine(), input);
                     break;
                 case 4:
                     System.out.println("Digite o login do usuário que você deseja remover");
@@ -86,11 +91,9 @@ public class Menu {
         } while (!sair());
     }
 
-    void incluirUsuario() throws IOException {
+    void incluirUsuario(Scanner input) throws IOException {
         FileWriter fw = new FileWriter("Usuários.txt", true);
         BufferedWriter bw = new BufferedWriter(fw);
-
-        Scanner input = new Scanner(System.in);
         String login, nome, email;
         System.out.println("Digite o login do novo usuário");
         Usuario usuarioAtual = null;
@@ -100,6 +103,7 @@ public class Menu {
          */
         do {
             login = input.nextLine();
+            System.out.println(login);
             //Primeiro Login
             if (Main.admUsuarios.usuarios.isEmpty()) {
                 usuarioAtual = new Usuario();
@@ -131,7 +135,6 @@ public class Menu {
             System.out.println("Digite seu email");
             email = input.nextLine();
             usuarioAtual.setEmail(email);
-            bw.newLine();
             bw.append("Login: " + usuarioAtual.getLogin());
             bw.newLine();
             bw.append("Nome: " + usuarioAtual.getNome());
@@ -144,9 +147,8 @@ public class Menu {
         fw.close();
     }
 
-    void alterarUsuario() throws IOException {
+    void alterarUsuario(Scanner input) throws IOException {
         System.out.println("Alterando um usuário\nDigite o usuário que você quer alterar:");
-        Scanner input = new Scanner(System.in);
         String loginDigitado;
         loginDigitado = input.nextLine();
         boolean loginExistente = false;
@@ -154,8 +156,8 @@ public class Menu {
             for (int i = 0; i < Main.admUsuarios.usuarios.size(); i++) {
                 //encontrou o login
                 if (null != Main.admUsuarios.usuarios.get(i) && loginDigitado.equals(Main.admUsuarios.usuarios.get(i).getLogin())) {
-                    incluirUsuario();
-                    removerUsuario(loginDigitado);
+                    incluirUsuario(input);
+                    removerUsuario(loginDigitado, input);
                     loginExistente = true;
                     break;
                 }
@@ -172,7 +174,7 @@ public class Menu {
         } while (!loginExistente);
     }
 
-    void removerUsuario(String loginDigitado) {
+    void removerUsuario(String loginDigitado, Scanner input) {
 
         String loginRemover;
         if (loginDigitado == null) {
