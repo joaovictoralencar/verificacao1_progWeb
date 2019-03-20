@@ -13,7 +13,6 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Scanner;
-import java.util.ArrayList;
 
 /**
  *
@@ -23,9 +22,11 @@ public class Menu {
 
     int opcaoMarcada = 100000;
     Scanner input;
+    File arquivo;
+
     Menu(Scanner input) throws FileNotFoundException, IOException {
-        
-        File arquivo = new File("Usuários.txt");
+
+        arquivo = new File("Usuários.txt");
         boolean existe = arquivo.exists();
         if (!existe) {
             try {
@@ -38,14 +39,42 @@ public class Menu {
         FileReader fr = new FileReader("Usuários.txt");
         BufferedReader br = new BufferedReader(fr);
         Usuario usuarioTempo;
+        System.out.println(arquivo.length());
         if (arquivo.length() != 0) {
-            for (int i = 0; i < Main.admUsuarios.usuarios.size(); i++) {
+            while (br.ready()) {
                 usuarioTempo = new Usuario();
                 usuarioTempo.setLogin(br.readLine().split(": ")[1]);
                 usuarioTempo.setNome(br.readLine().split(": ")[1]);
                 usuarioTempo.setEmail(br.readLine().split(": ")[1]);
                 Main.admUsuarios.usuarios.add(usuarioTempo);
             }
+        }
+        fr.close();
+        br.close();
+    }
+
+    void recriarArquivo() throws IOException {
+        if (arquivo.exists()) {
+            arquivo.delete();
+            arquivo = new File("Usuários.txt");
+            try {
+                System.out.println("RECRIEI VIU");
+                arquivo.createNewFile();
+            } catch (IOException e) {
+                System.out.println(e);
+            }
+        }
+        //preencher Arquivo
+        FileWriter fw = new FileWriter("Usuários.txt", true);
+        BufferedWriter bw = new BufferedWriter(fw);
+        for (int i = 0; i < Main.admUsuarios.usuarios.size(); i++) {
+
+            bw.append("Login: " + Main.admUsuarios.usuarios.get(i).getLogin());
+            bw.newLine();
+            bw.append("Nome: " + Main.admUsuarios.usuarios.get(i).getNome());
+            bw.newLine();
+            bw.append("Email: " + Main.admUsuarios.usuarios.get(i).getEmail());
+            bw.newLine();
         }
     }
 
@@ -61,11 +90,11 @@ public class Menu {
                     + "5 Exibir todos os usuários existentes\n"
                     + "0 Sair\n"
                     + "Digite o número da opção:");
-            
+
             //System.out.println(input);
             opcaoMarcada = Integer.parseInt(input.nextLine());
             //mexe aqui
-            System.out.println("OPÇÃO MARCADA = "+opcaoMarcada);
+            System.out.println("OPÇÃO MARCADA = " + opcaoMarcada);
             switch (opcaoMarcada) {
                 case 1:
                     incluirUsuario(input);
@@ -75,10 +104,11 @@ public class Menu {
                     break;
                 case 3:
                     System.out.println("Digite o login do usuário que você deseja remover");
+
                     removerUsuario(input.nextLine(), input);
                     break;
                 case 4:
-                    System.out.println("Digite o login do usuário que você deseja remover");
+                    System.out.println("Digite o login do usuário que você deseja exibir");
                     exibirUsuario(input.nextLine());
                     break;
                 case 5:
@@ -92,18 +122,17 @@ public class Menu {
     }
 
     void incluirUsuario(Scanner input) throws IOException {
-        FileWriter fw = new FileWriter("Usuários.txt", true);
+        FileWriter fw = new FileWriter("Usuários.txt",true);
         BufferedWriter bw = new BufferedWriter(fw);
         String login, nome, email;
-        System.out.println("Digite o login do novo usuário");
         Usuario usuarioAtual = null;
         boolean loginValido = false;
         /*
          Checa se o usuário já não existe.
          */
         do {
+            System.out.println("Digite o login do novo usuário");
             login = input.nextLine();
-            System.out.println(login);
             //Primeiro Login
             if (Main.admUsuarios.usuarios.isEmpty()) {
                 usuarioAtual = new Usuario();
@@ -113,10 +142,11 @@ public class Menu {
                 System.out.println("Login válido");
             } else { //Próximos Logins
                 for (int i = 0; i < Main.admUsuarios.usuarios.size(); i++) {
+                    //se já existir um usuário
                     if (null != Main.admUsuarios.usuarios.get(i) && login.equals(Main.admUsuarios.usuarios.get(i).getLogin())) {
                         System.out.println("Login já existente ou inválido. Por favor, digite outro");
-                        break;
-                    } else if (Main.admUsuarios.usuarios.get(i) == null) {
+                    } //caso não exista, cria um novo
+                    else {
                         usuarioAtual = new Usuario();
                         usuarioAtual.setLogin(login);
                         Main.admUsuarios.usuarios.add(i, usuarioAtual);
@@ -124,6 +154,7 @@ public class Menu {
                         loginValido = true;
                         break;
                     }
+
                 }
             }
         } while (loginValido == false);
@@ -143,8 +174,7 @@ public class Menu {
             bw.newLine();
             System.out.println("Usuário criado com sucesso!");
         }
-        bw.close();
-        fw.close();
+
     }
 
     void alterarUsuario(Scanner input) throws IOException {
@@ -159,6 +189,7 @@ public class Menu {
                     incluirUsuario(input);
                     removerUsuario(loginDigitado, input);
                     loginExistente = true;
+                    recriarArquivo();
                     break;
                 }
             }
@@ -174,8 +205,7 @@ public class Menu {
         } while (!loginExistente);
     }
 
-    void removerUsuario(String loginDigitado, Scanner input) {
-
+    void removerUsuario(String loginDigitado, Scanner input) throws FileNotFoundException, IOException {
         String loginRemover;
         if (loginDigitado == null) {
             Scanner in = new Scanner(System.in);
@@ -186,11 +216,17 @@ public class Menu {
         if (Main.admUsuarios.usuarios.isEmpty()) {
             System.out.println("Não há usuários cadastrados para remover");
         } else {
+            //apagando do vetor local
+            Usuario usuarioTempo = null;
             for (int i = 0; i < Main.admUsuarios.usuarios.size(); i++) {
                 if (Main.admUsuarios.usuarios.get(i).getLogin().equals(loginRemover)) {
+                    usuarioTempo = Main.admUsuarios.usuarios.get(i);
                     Main.admUsuarios.usuarios.remove(i);
+                    System.out.println("Usuário Removido");
                 }
             }
+            //apagando do txt
+            recriarArquivo();
         }
     }
 
@@ -214,7 +250,6 @@ public class Menu {
             if (Main.admUsuarios.usuarios.get(i) != null) {
                 exibirUsuario(Main.admUsuarios.usuarios.get(i).getLogin());
             }
-            System.out.println("TESTE");
         }
     }
 

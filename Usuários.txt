@@ -1,9 +1,0 @@
-Login: 
-Nome: joao
-Email: victor@gmail.com
-Login: joao
-Nome: victor
-Email: joao@gmail.com
-Login: jems
-Nome: jemima
-Email: jemima.com.br
