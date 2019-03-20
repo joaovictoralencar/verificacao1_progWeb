@@ -20,62 +20,65 @@ import java.util.Scanner;
  */
 public class Menu {
 
-    int opcaoMarcada = 100000;
+    int opcaoMarcada;
     Scanner input;
     File arquivo;
 
     Menu(Scanner input) throws FileNotFoundException, IOException {
-
+        /*assim que menu é criado, vou verificar se já não existe um arquivo txt. 
+         Se já existir, vou passar seus valores para o vetor local
+         */
         arquivo = new File("Usuários.txt");
         boolean existe = arquivo.exists();
-        if (!existe) {
+        if (!existe) {//se não existe arquivo, criaremos um
             try {
                 arquivo.createNewFile();
             } catch (IOException e) {
                 System.out.println(e);
             }
-        }
-
-        FileReader fr = new FileReader("Usuários.txt");
-        BufferedReader br = new BufferedReader(fr);
-        Usuario usuarioTempo;
-        System.out.println(arquivo.length());
-        if (arquivo.length() != 0) {
-            while (br.ready()) {
-                usuarioTempo = new Usuario();
-                usuarioTempo.setLogin(br.readLine().split(": ")[1]);
-                usuarioTempo.setNome(br.readLine().split(": ")[1]);
-                usuarioTempo.setEmail(br.readLine().split(": ")[1]);
-                Main.admUsuarios.usuarios.add(usuarioTempo);
+        } else {//se já existe, vamos tentar passar para o vetor
+            if (arquivo.length() != 0) {//antes de passar pro vetor, precisamos saber se ele não está vazio
+                FileReader fr = new FileReader("Usuários.txt");
+                BufferedReader br = new BufferedReader(fr);
+                Usuario usuarioTempo;
+                System.out.println(arquivo.length());
+                while (br.ready()) {
+                    usuarioTempo = new Usuario();
+                    usuarioTempo.setLogin(br.readLine().split(": ")[1]);
+                    usuarioTempo.setNome(br.readLine().split(": ")[1]);
+                    usuarioTempo.setEmail(br.readLine().split(": ")[1]);
+                    Main.admUsuarios.usuarios.add(usuarioTempo);
+                }
+                fr.close();
+                br.close();
             }
         }
-        fr.close();
-        br.close();
     }
 
+    //Essa função é minha "saída" para excluir usuário. Toda vez que eu remover algum usuário, eu reescrevo o arquivo
     void recriarArquivo() throws IOException {
-        if (arquivo.exists()) {
+        if (arquivo.exists()) {//se o arquivo existe, excluo ele
             arquivo.delete();
             arquivo = new File("Usuários.txt");
-            try {
-                System.out.println("RECRIEI VIU");
+            try {//e crio outro
                 arquivo.createNewFile();
             } catch (IOException e) {
                 System.out.println(e);
             }
         }
-        //preencher Arquivo
+        //Agora que temos certeza de que ele existe, vamos preencher o arquivo
         FileWriter fw = new FileWriter("Usuários.txt", true);
         BufferedWriter bw = new BufferedWriter(fw);
-        for (int i = 0; i < Main.admUsuarios.usuarios.size(); i++) {
-
-            bw.append("Login: " + Main.admUsuarios.usuarios.get(i).getLogin());
+        for (Usuario usuario : Main.admUsuarios.usuarios) {
+            bw.write("Login: " + usuario.getLogin());
             bw.newLine();
-            bw.append("Nome: " + Main.admUsuarios.usuarios.get(i).getNome());
+            bw.write("Nome: " + usuario.getNome());
             bw.newLine();
-            bw.append("Email: " + Main.admUsuarios.usuarios.get(i).getEmail());
+            bw.write("Email: " + usuario.getEmail());
             bw.newLine();
         }
+        bw.close();
+        fw.close();
     }
 
     void mostraInterface() throws IOException {
@@ -90,10 +93,10 @@ public class Menu {
                     + "5 Exibir todos os usuários existentes\n"
                     + "0 Sair\n"
                     + "Digite o número da opção:");
-
-            //System.out.println(input);
+            
+            //o usuário precisa digitar um número, pois não achei onde fazer o tratamento
             opcaoMarcada = Integer.parseInt(input.nextLine());
-            //mexe aqui
+            
             System.out.println("OPÇÃO MARCADA = " + opcaoMarcada);
             switch (opcaoMarcada) {
                 case 1:
@@ -122,7 +125,7 @@ public class Menu {
     }
 
     void incluirUsuario(Scanner input) throws IOException {
-        FileWriter fw = new FileWriter("Usuários.txt",true);
+        FileWriter fw = new FileWriter("Usuários.txt", true);
         BufferedWriter bw = new BufferedWriter(fw);
         String login, nome, email;
         Usuario usuarioAtual = null;
@@ -158,23 +161,27 @@ public class Menu {
                 }
             }
         } while (loginValido == false);
-
+        //se o login for válido, vamos agora pegar o nome e o email
         if (usuarioAtual != null) {
+            //pede os dados
             System.out.println("Digite seu nome");
             nome = input.nextLine();
             usuarioAtual.setNome(nome);
             System.out.println("Digite seu email");
             email = input.nextLine();
             usuarioAtual.setEmail(email);
-            bw.append("Login: " + usuarioAtual.getLogin());
+            
+            //Escrevendo o novo usuário no txt
+            bw.write("Login: " + usuarioAtual.getLogin());
             bw.newLine();
-            bw.append("Nome: " + usuarioAtual.getNome());
+            bw.write("Nome: " + usuarioAtual.getNome());
             bw.newLine();
-            bw.append("Email: " + usuarioAtual.getEmail());
+            bw.write("Email: " + usuarioAtual.getEmail());
             bw.newLine();
             System.out.println("Usuário criado com sucesso!");
         }
-
+        bw.close();
+        fw.close();
     }
 
     void alterarUsuario(Scanner input) throws IOException {
@@ -189,10 +196,10 @@ public class Menu {
                     incluirUsuario(input);
                     removerUsuario(loginDigitado, input);
                     loginExistente = true;
-                    recriarArquivo();
                     break;
                 }
             }
+            //se não existir o login
             if (!loginExistente) {
                 System.out.println("Login não cadastrado\nDigite outro ou '0' para sair");
                 loginDigitado = input.nextLine();
@@ -207,12 +214,15 @@ public class Menu {
 
     void removerUsuario(String loginDigitado, Scanner input) throws FileNotFoundException, IOException {
         String loginRemover;
+        /*esse if else me ajuda a remover um usuário na função alterar sem ter que perguntar de novo o login,
+        pois em alterar, já se tem ele*/
         if (loginDigitado == null) {
             Scanner in = new Scanner(System.in);
             loginRemover = in.nextLine();
         } else {
             loginRemover = loginDigitado;
         }
+        //se o vetor estivar vazio, não há usuários para remover
         if (Main.admUsuarios.usuarios.isEmpty()) {
             System.out.println("Não há usuários cadastrados para remover");
         } else {
@@ -232,7 +242,9 @@ public class Menu {
 
     void exibirUsuario(String loginDigitado) throws FileNotFoundException, IOException {
         boolean usuarioExiste = false;
+        //vou percorrer o vetor para buscar os logins
         for (int i = 0; i < Main.admUsuarios.usuarios.size(); i++) {
+            //se o login existir, já irei mostrar
             if (Main.admUsuarios.usuarios.get(i).getLogin().equals(loginDigitado)) {
                 System.out.println("Login: " + Main.admUsuarios.usuarios.get(i).getLogin());
                 System.out.println("Nome: " + Main.admUsuarios.usuarios.get(i).getNome());
@@ -246,14 +258,15 @@ public class Menu {
     }
 
     void exibirTodos() throws IOException {
-        for (int i = 0; i < Main.admUsuarios.usuarios.size(); i++) {
-            if (Main.admUsuarios.usuarios.get(i) != null) {
-                exibirUsuario(Main.admUsuarios.usuarios.get(i).getLogin());
+        //percorre o vetor de usuários e chama a função de exibir para cada um dos valores
+        for (Usuario usuario : Main.admUsuarios.usuarios) {
+            if (usuario != null) {
+                exibirUsuario(usuario.getLogin());
             }
         }
     }
 
     boolean sair() {
-        return opcaoMarcada == 0;
+        return true;
     }
 }
