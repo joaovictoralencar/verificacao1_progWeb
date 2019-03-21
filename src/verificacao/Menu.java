@@ -41,7 +41,6 @@ public class Menu {
                 FileReader fr = new FileReader("Usuários.txt");
                 BufferedReader br = new BufferedReader(fr);
                 Usuario usuarioTempo;
-                System.out.println(arquivo.length());
                 while (br.ready()) {
                     usuarioTempo = new Usuario();
                     usuarioTempo.setLogin(br.readLine().split(": ")[1]);
@@ -147,7 +146,8 @@ public class Menu {
                 for (int i = 0; i < Main.admUsuarios.usuarios.size(); i++) {
                     //se já existir um usuário
                     if (null != Main.admUsuarios.usuarios.get(i) && login.equals(Main.admUsuarios.usuarios.get(i).getLogin())) {
-                        System.out.println("Login já existente ou inválido. Por favor, digite outro");
+                        System.out.println("Login já existente ou inválido. Por favor, digite outro ou 'sair' para sair");
+                        break;
                     } //caso não exista, cria um novo
                     else {
                         usuarioAtual = new Usuario();
@@ -157,7 +157,6 @@ public class Menu {
                         loginValido = true;
                         break;
                     }
-
                 }
             }
         } while (loginValido == false);
@@ -243,12 +242,12 @@ public class Menu {
     void exibirUsuario(String loginDigitado) throws FileNotFoundException, IOException {
         boolean usuarioExiste = false;
         //vou percorrer o vetor para buscar os logins
-        for (int i = 0; i < Main.admUsuarios.usuarios.size(); i++) {
+        for (Usuario usuario : Main.admUsuarios.usuarios) {
             //se o login existir, já irei mostrar
-            if (Main.admUsuarios.usuarios.get(i).getLogin().equals(loginDigitado)) {
-                System.out.println("Login: " + Main.admUsuarios.usuarios.get(i).getLogin());
-                System.out.println("Nome: " + Main.admUsuarios.usuarios.get(i).getNome());
-                System.out.println("Email: " + Main.admUsuarios.usuarios.get(i).getEmail());
+            if (usuario.getLogin().equals(loginDigitado)) {
+                System.out.println("Login: " + usuario.getLogin());
+                System.out.println("Nome: " + usuario.getNome());
+                System.out.println("Email: " + usuario.getEmail());
                 usuarioExiste = true;
             }
         }
@@ -267,6 +266,6 @@ public class Menu {
     }
 
     boolean sair() {
-        return true;
+        return opcaoMarcada == 0;
     }
 }
